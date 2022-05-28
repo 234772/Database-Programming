@@ -1,6 +1,7 @@
 CREATE OR REPLACE PACKAGE pkg_FurnitureShop 
 IS
     salary_raise_multiplier NUMBER := 2;
+    days_worked_loyalty_raise NUMBER := 3000;
     
     noone_eligible EXCEPTION;
     invalid_id EXCEPTION;
@@ -12,16 +13,19 @@ IS
         INNER JOIN materials m1 ON pc1.materialId = m1.materialId
         WHERE m1.name = material_name;
         
---    FUNCTION eligible_for_raise(
---        empId_in employees.employeeId%TYPE) 
---        RETURN BOOLEAN;
+    CURSOR c_emps IS
+        SELECT * 
+        FROM Employees;
+        
+    FUNCTION eligible_for_raise(
+        empId_in employees.employeeId%TYPE)
+        RETURN BOOLEAN;
 --        
 --    FUNCTION valid_empId(
 --        empId_in employees.employeeId%TYPE) 
 --        RETURN BOOLEAN;
 --        
---    PROCEDURE loyalty_raise(
---        empId_in employees.employeeId%TYPE);
+    PROCEDURE loyalty_raise;
 --        
 --    PROCEDURE hire_employee(
 --        empId_in employees.employeeId%TYPE, 
@@ -41,14 +45,41 @@ END pkg_FurnitureShop;
 CREATE OR REPLACE PACKAGE BODY pkg_FurnitureShop
 IS
     PROCEDURE products_description(material_name_in materials.name%TYPE) IS 
-        BEGIN   
+    BEGIN   
         FOR product IN c_products(material_name_in) LOOP
             dbms_output.put_line('Product ' || product.product_name || ' contains the specified material: ' || product.material_name);
         END LOOP;
     END;
+    
+    FUNCTION eligible_for_raise (empId_in employees.employeeId%TYPE) RETURN BOOLEAN IS
+        days_worked NUMBER;
+    BEGIN
+        SELECT sysdate - hire_date INTO days_worked FROM Employees WHERE employeeId = empId_in;
+        IF days_worked >= days_worked_loyalty_raise THEN
+            RETURN TRUE;
+        ELSE 
+            RETURN FALSE;
+        END IF;
+    END;
+    
+    PROCEDURE loyalty_raise IS
+    BEGIN
+        FOR emp IN c_emps LOOP
+            IF eligible_for_raise(emp.employeeId) THEN
+                UPDATE Employees
+                SET salary = salary + (salary * (salary_raise_multiplier / 100))
+                WHERE sysdate - hire_date >= days_worked_loyalty_raise;
+            END IF;
+        END LOOP;
+
+    END;
+        
 END pkg_FurnitureShop;
 
 DECLARE
 BEGIN
-    pkg_FurnitureShop.products_description('Oak wood');
+    pkg_furnitureshop.loyalty_raise;
 END;
+
+SELECT *
+FROM employees;
