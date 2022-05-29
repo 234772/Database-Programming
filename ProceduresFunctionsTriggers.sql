@@ -47,6 +47,9 @@ IS
         email_in employees.email%TYPE,
         managerId_in employees.managerId%TYPE);
         
+    PROCEDURE fire_employee(
+        empId_in employees.employeeId%TYPE);
+        
     PROCEDURE products_description(
         material_name_in materials.name%TYPE);
         
@@ -124,6 +127,18 @@ IS
             dbms_output.put_line('Id either incorrect or taken');
     END hire_employee;
     
+    PROCEDURE fire_employee(empId_in employees.employeeId%TYPE) IS
+    BEGIN
+        DELETE Employees
+        WHERE employeeId = empId_in;
+        IF SQL%ROWCOUNT = 0 THEN
+            RAISE invalid_id;
+        END IF;
+        EXCEPTION
+            WHEN invalid_id THEN
+                dbms_output.put_line('Id is either invalid or no such employee exists');
+    END fire_employee;
+    
     PROCEDURE products_description(material_name_in materials.name%TYPE) IS 
     BEGIN   
         FOR product IN c_products(material_name_in) LOOP
@@ -136,6 +151,12 @@ END pkg_FurnitureShop;
 DECLARE
 BEGIN
     pkg_furnitureshop.hire_employee(17, 'Jakub', 'Wandelt', 'Consultant', 12000, TO_DATE('23/04/2002', 'dd/mm/yyyy'), '333-333-333', 'jwandelt@wp.pl', 3);
+END;
+
+
+DECLARE 
+BEGIN 
+    pkg_FurnitureShop.fire_employee(17);
 END;
 
 DELETE employees
