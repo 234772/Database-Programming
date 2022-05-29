@@ -1,7 +1,7 @@
 CREATE OR REPLACE PACKAGE pkg_FurnitureShop 
 IS
     salary_raise_multiplier NUMBER := 2;
-    days_worked_loyalty_raise NUMBER := 300000000000;
+    days_worked_loyalty_raise NUMBER := 3000;
 
     invalid_id EXCEPTION;
     noone_eligible EXCEPTION;
