@@ -19,7 +19,16 @@ IS
         
     FUNCTION eligible_for_raise(
         empId_in employees.employeeId%TYPE)
-        RETURN BOOLEAN;
+        RETURN BOOLEAN; 
+        
+    FUNCTION employees_above_given_salary(
+        salary_in employees.salary%TYPE)
+        RETURN NUMBER;
+        
+    FUNCTION salary_time_worked_ratio(
+        salary_in employees.salary%TYPE,
+        hire_date_in employees.hire_date%TYPE) 
+        RETURN FLOAT;
 --        
 --    FUNCTION valid_empId(
 --        empId_in employees.employeeId%TYPE) 
@@ -44,12 +53,6 @@ END pkg_FurnitureShop;
 
 CREATE OR REPLACE PACKAGE BODY pkg_FurnitureShop
 IS
-    PROCEDURE products_description(material_name_in materials.name%TYPE) IS 
-    BEGIN   
-        FOR product IN c_products(material_name_in) LOOP
-            dbms_output.put_line('Product ' || product.product_name || ' contains the specified material: ' || product.material_name);
-        END LOOP;
-    END;
     
     FUNCTION eligible_for_raise (empId_in employees.employeeId%TYPE) RETURN BOOLEAN IS
         days_worked NUMBER;
@@ -60,7 +63,21 @@ IS
         ELSE 
             RETURN FALSE;
         END IF;
-    END;
+    END eligible_for_raise;
+    
+    FUNCTION salary_time_worked_ratio (salary_in employees.salary%TYPE, hire_date_in employees.hire_date%TYPE) RETURN FLOAT IS
+        ratio FLOAT;
+    BEGIN   
+        ratio := salary_in / (sysdate - hire_date_in);
+        RETURN ROUND(ratio, 2);
+    END salary_time_worked_ratio;
+    
+    FUNCTION employees_above_given_salary(salary_in employees.salary%TYPE) RETURN NUMBER IS
+        num_emps NUMBER;
+    BEGIN
+        SELECT COUNT(*) INTO num_emps FROM Employees WHERE salary > salary_in;
+        RETURN num_emps;
+    END employees_above_given_salary;
     
     PROCEDURE loyalty_raise IS
     BEGIN
@@ -71,15 +88,16 @@ IS
                 WHERE sysdate - hire_date >= days_worked_loyalty_raise;
             END IF;
         END LOOP;
-
-    END;
+    END loyalty_raise;
+    
+    PROCEDURE products_description(material_name_in materials.name%TYPE) IS 
+    BEGIN   
+        FOR product IN c_products(material_name_in) LOOP
+            dbms_output.put_line('Product ' || product.product_name || ' contains the specified material: ' || product.material_name);
+        END LOOP;
+    END products_description;
         
 END pkg_FurnitureShop;
 
-DECLARE
-BEGIN
-    pkg_furnitureshop.loyalty_raise;
-END;
-
-SELECT *
+SELECT last_name, pkg_furnitureshop.salary_time_worked_ratio(salary, hire_date)
 FROM employees;
