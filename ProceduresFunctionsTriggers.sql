@@ -158,6 +158,62 @@ IS
         
 END pkg_FurnitureShop;
 
+-- Triggers
+CREATE OR REPLACE TRIGGER tr_correct_salary
+BEFORE INSERT OR UPDATE
+ON employees
+FOR EACH ROW
+DECLARE
+    PRAGMA AUTONOMOUS_TRANSACTION;
+    v_manager_salary employees.salary%TYPE;
+BEGIN
+    SELECT man.salary INTO v_manager_salary
+    FROM employees e
+    LEFT JOIN employees man
+    ON e.managerid = man.employeeid
+    WHERE e.employeeid = :old.employeeid;
+    
+    IF (v_manager_salary IS NOT NULL AND :NEW.salary > v_manager_salary)
+    THEN
+        raise_application_error(-20000
+            , 'Employee cannot have higher salary than manager');
+    END IF;
+    
+    COMMIT;
+END;
+
+CREATE OR REPLACE TRIGGER tr_positive_product_price_per_unit
+BEFORE INSERT OR UPDATE
+ON products
+FOR EACH ROW
+DECLARE
+    PRAGMA AUTONOMOUS_TRANSACTION;
+BEGIN
+    IF (:NEW.price_per_unit < 0)
+    THEN
+        raise_application_error(-20000
+            , 'Price per unit of a product cannot be negative');
+    END IF;
+    
+    COMMIT;
+END;
+
+CREATE OR REPLACE TRIGGER tr_positive_material_price_per_meter
+BEFORE INSERT OR UPDATE
+ON materials
+FOR EACH ROW
+DECLARE
+    PRAGMA AUTONOMOUS_TRANSACTION;
+BEGIN
+    IF (:NEW.price_per_m2 < 0)
+    THEN
+        raise_application_error(-20000
+            , 'Price per meter2 of a material cannot be negative');
+    END IF;
+    
+    COMMIT;
+END;
+
 --DECLARE
 --BEGIN
 --    pkg_furnitureshop.hire_employee(17, 'Jakub', 'Wandelt', 'Consultant', 12000, TO_DATE('23/04/2002', 'dd/mm/yyyy'), '333-333-333', 'jwandelt@wp.pl', 3);
