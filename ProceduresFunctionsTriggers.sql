@@ -214,6 +214,27 @@ BEGIN
     COMMIT;
 END;
 
+CREATE OR REPLACE TRIGGER tr_product_in_stock_to_purchase
+BEFORE INSERT
+ON orderproductline
+FOR EACH ROW
+DECLARE
+    PRAGMA AUTONOMOUS_TRANSACTION;
+    v_current_product_in_stock products.quantity_in_stock%TYPE;
+BEGIN
+    SELECT pro.quantity_in_stock INTO v_current_product_in_stock
+    FROM products pro 
+    WHERE pro.productid = :NEW.productid;
+    
+    IF (v_current_product_in_stock IS NOT NULL AND v_current_product_in_stock < :NEW.quantity)
+    THEN
+        raise_application_error(-20000
+            , 'Cannot order more product than is in stock');
+    END IF;
+    
+    COMMIT;
+END;
+
 --DECLARE
 --BEGIN
 --    pkg_furnitureshop.hire_employee(17, 'Jakub', 'Wandelt', 'Consultant', 12000, TO_DATE('23/04/2002', 'dd/mm/yyyy'), '333-333-333', 'jwandelt@wp.pl', 3);
