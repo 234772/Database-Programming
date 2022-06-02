@@ -1,4 +1,4 @@
--- Create tables for furniture shop database --
+
 
 -- Materials table -- 
 CREATE TABLE Materials(
