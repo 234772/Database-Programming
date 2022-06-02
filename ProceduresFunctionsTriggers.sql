@@ -160,7 +160,7 @@ END pkg_FurnitureShop;
 
 -- Triggers
 CREATE OR REPLACE TRIGGER tr_correct_salary
-BEFORE INSERT OR UPDATE
+BEFORE UPDATE
 ON employees
 FOR EACH ROW
 DECLARE
@@ -175,6 +175,8 @@ BEGIN
     
     IF (v_manager_salary IS NOT NULL AND :NEW.salary > v_manager_salary)
     THEN
+        dbms_output.put_line(:NEW.salary);
+        dbms_output.put_line(v_manager_salary);
         raise_application_error(-20000
             , 'Employee cannot have higher salary than manager');
     END IF;
@@ -214,19 +216,34 @@ BEGIN
     COMMIT;
 END;
 
---DECLARE
---BEGIN
---    pkg_furnitureshop.hire_employee(17, 'Jakub', 'Wandelt', 'Consultant', 12000, TO_DATE('23/04/2002', 'dd/mm/yyyy'), '333-333-333', 'jwandelt@wp.pl', 3);
---END;
---
---
-DECLARE 
+UPDATE employees
+SET salary = 20000
+WHERE NOT (employeeId = 2 OR employeeId = 3);
+
+SET SERVEROUTPUT ON;
+
+SELECT * FROM employees;
+
+SELECT employeeId, salary FROM Employees;
+
 BEGIN 
-    pkg_FurnitureShop.loyalty_raise;
+    pkg_furnitureshop.loyalty_raise;
 END;
---
---DELETE employees
---WHERE employeeId = 11;
---
+
+SELECT employeeId, salary FROM Employees;
+
 SELECT *
-FROM employees;
+    FROM employees e
+    RIGHT JOIN employees man
+    ON e.employeeId = man.managerId;
+    
+SELECT *
+    FROM employees e
+    LEFT JOIN employees man
+    ON e.managerId = man.employeeId;
+    
+BEGIN
+    pkg_furnitureshop.products_description('Oak wood');
+END;
+
+SELECT * FROM EMPLOYEES;

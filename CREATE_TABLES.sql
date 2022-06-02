@@ -1,13 +1,6 @@
-DROP TABLE CLIENTS;
-DROP TABLE EMPLOYEES;
-DROP TABLE MATERIALS;
-DROP TABLE ORDERPRODUCTLINE;
-DROP TABLE ORDERS;
-DROP TABLE PRODUCTS;
-DROP TABLE PRODUCTSCOMPOSITION;
-
 -- Create tables for furniture shop database --
 
+-- Materials table -- 
 CREATE TABLE Materials(
     materialId NUMBER NOT NULL,
     name VARCHAR(20) NOT NULL,
@@ -15,6 +8,7 @@ CREATE TABLE Materials(
     PRIMARY KEY(materialId)
 );
 
+-- Products table --
 CREATE TABLE Products(
     productId NUMBER NOT NULL,
     name VARCHAR(50) NOT NULL,
@@ -24,6 +18,7 @@ CREATE TABLE Products(
     PRIMARY KEY(productId)
 );
 
+-- Products' composition table -- 
 CREATE TABLE ProductsComposition(
     compositionId NUMBER NOT NULL,
     materialId NUMBER NOT NULL,
@@ -34,6 +29,7 @@ CREATE TABLE ProductsComposition(
     FOREIGN KEY (productId) REFERENCES Products(productId)
 );
 
+-- Clients table --
 CREATE TABLE Clients(
     clientId NUMBER NOT NULL,
     first_name VARCHAR(20) NOT NULL,
@@ -46,6 +42,7 @@ CREATE TABLE Clients(
     PRIMARY KEY(clientId)
 );
 
+-- Employees table --
 CREATE TABLE Employees(
     employeeId NUMBER NOT NULL,
     first_name VARCHAR(20) NOT NULL,
@@ -59,6 +56,7 @@ CREATE TABLE Employees(
     PRIMARY KEY(employeeId)
 );
 
+-- Orders table -- 
 CREATE TABLE Orders(
     orderId NUMBER NOT NULL,
     clientId NUMBER NOT NULL,
@@ -72,6 +70,7 @@ CREATE TABLE Orders(
     FOREIGN KEY (employeeId) REFERENCES Employees(employeeId)
 );
 
+-- Order product line table --
 CREATE TABLE OrderProductLine(
     order_lineId NUMBER NOT NULL,
     productId NUMBER NOT NULL,
