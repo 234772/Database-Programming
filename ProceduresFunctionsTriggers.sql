@@ -216,34 +216,23 @@ BEGIN
     COMMIT;
 END;
 
-UPDATE employees
-SET salary = 20000
-WHERE NOT (employeeId = 2 OR employeeId = 3);
-
-SET SERVEROUTPUT ON;
-
-SELECT * FROM employees;
-
-SELECT employeeId, salary FROM Employees;
-
-BEGIN 
-    pkg_furnitureshop.loyalty_raise;
-END;
-
-SELECT employeeId, salary FROM Employees;
-
-SELECT *
-    FROM employees e
-    RIGHT JOIN employees man
-    ON e.employeeId = man.managerId;
-    
-SELECT *
-    FROM employees e
-    LEFT JOIN employees man
-    ON e.managerId = man.employeeId;
-    
+CREATE OR REPLACE TRIGGER tr_product_in_stock_to_purchase
+BEFORE INSERT
+ON orderproductline
+FOR EACH ROW
+DECLARE
+    PRAGMA AUTONOMOUS_TRANSACTION;
+    v_current_product_in_stock products.quantity_in_stock%TYPE;
 BEGIN
-    pkg_furnitureshop.products_description('Oak wood');
+    SELECT pro.quantity_in_stock INTO v_current_product_in_stock
+    FROM products pro 
+    WHERE pro.productid = :NEW.productid;
+    
+    IF (v_current_product_in_stock IS NOT NULL AND v_current_product_in_stock < :NEW.quantity)
+    THEN
+        raise_application_error(-20000
+            , 'Cannot order more product than is in stock');
+    END IF;
+    
+    COMMIT;
 END;
-
-SELECT * FROM EMPLOYEES;
